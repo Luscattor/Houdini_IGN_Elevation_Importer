@@ -1,0 +1,13 @@
+# IGN Elevation Map Importer - Python Dependencies
+# No external dependencies required - uses only Python standard library
+
+# Optional dependencies for enhanced functionality:
+# requests>=2.25.0          # Alternative to urllib for HTTP requests
+# gdal>=3.0.0               # Advanced geospatial operations
+# numpy>=1.20.0             # Numerical computations
+# pillow>=8.0.0             # Image processing capabilities
+
+# Development dependencies:
+# pytest>=6.0.0             # Testing framework
+# black>=21.0.0             # Code formatting
+# flake8>=3.8.0             # Code linting
