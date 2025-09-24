@@ -48,7 +48,7 @@ This project follows a professional code of conduct. Please be respectful and co
 
 ```bash
 # Clone your fork
-git clone https://github.com/yourusername/IGN_Elevation_Importer.git
+git clone https://github.com/Luscattor/Houdini_IGN_Elevation_Importer.git
 cd IGN_Elevation_Importer
 
 # Install development dependencies (optional)

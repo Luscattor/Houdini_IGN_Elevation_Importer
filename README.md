@@ -5,8 +5,6 @@ A professional pipeline tool for importing French IGN (Institut national de l'in
 ![Elevation Result](docs/images/houdini_elevation_result.png)
 *Final elevation data imported in Houdini*
 
-![Houdini Setup](docs/images/houdini_setup.png)
-*Houdini node network setup*
 
 ## Features
 
@@ -67,18 +65,8 @@ IGN_Elevation_Importer/
 
 ## Workflow Overview
 
-```mermaid
-graph TD
-    A[IGN LiDAR HD Portal] --> B[Select MNT Data Type]
-    B --> C[Export Tile URLs to .txt]
-    C --> D[Run ign_downloader.py]
-    D --> E[Download .tif Files]
-    D --> F[Generate metadata.json]
-    E --> G[Houdini Python SOP]
-    F --> G
-    G --> H[Point Cloud with Attributes]
-    H --> I[Import Elevation Tiles]
-```
+![Houdini Setup](docs/images/houdini_setup.png)
+*Houdini node network setup*
 
 ## Requirements
 
@@ -90,7 +78,7 @@ graph TD
 
 1. Clone this repository:
 ```bash
-git clone https://github.com/yourusername/IGN_Elevation_Importer.git
+git clone https://github.com/Luscattor/Houdini_IGN_Elevation_Importer.git
 cd IGN_Elevation_Importer
 ```
 
@@ -222,9 +210,8 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Contact
 
-For professional support and studio integration, please contact [your-email@domain.com]
+For professional support and studio integration, please contact [alexandre.laroumet@gmail.com]
 
 ---
 
 *This tool is designed for professional VFX and game development workflows. Not affiliated with IGN or SideFX.*
-test

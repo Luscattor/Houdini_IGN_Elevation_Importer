@@ -3,14 +3,14 @@
 IGN LiDAR MNT Downloader - Standalone Version
 ----------------------------------------------
 
-Script Python standalone pour télécharger les tuiles IGN LiDAR depuis un fichier .txt
-et générer un fichier de métadonnées JSON pour Houdini.
+Standalone Python script to download IGN LiDAR tiles from a .txt file
+and generate a JSON metadata file for Houdini.
 
-UTILISATION
------------
+USAGE
+-----
 python ign_downloader.py
 
-Modifiez la config ci-dessous avant utilisation.
+Modify the config below before use.
 """
 
 import os
@@ -25,23 +25,23 @@ import urllib.parse
 # =========================
 
 CONFIG = {
-    # Chemin vers le fichier .txt contenant les URLs
+    # Path to .txt file containing the URLs
     "TXT_SOURCE": "2f79f8c7-6b76-446a-a213-63e335883b6b.txt",
     
-    # Dossier de destination pour les téléchargements
+    # Destination folder for downloads
     "DOWNLOAD_DIR": "ign_mnt_tiles",
     
-    # Fichier JSON de métadonnées pour Houdini
+    # JSON metadata file for Houdini
     "METADATA_FILE": "tiles_metadata.json",
     
-    # Timeout et essais pour les téléchargements
+    # Timeout and retries for downloads
     "HTTP_TIMEOUT": 60,
     "HTTP_RETRIES": 2,
     
-    # User-Agent HTTP
+    # HTTP User-Agent
     "USER_AGENT": "IGN-MNT-Downloader/1.0 (Python urllib)",
     
-    # Mode verbeux
+    # Verbose mode
     "VERBOSE": True,
 }
 
@@ -50,17 +50,17 @@ CONFIG = {
 # ==============================
 
 def log(msg):
-    """Affichage conditionnel selon VERBOSE."""
+    """Conditional display based on VERBOSE setting."""
     if CONFIG["VERBOSE"]:
         print(msg)
 
 def expand_path(path):
-    """Expand ~, variables d'env, etc."""
+    """Expand ~, environment variables, etc."""
     path = os.path.expandvars(os.path.expanduser(path))
     return os.path.normpath(path)
 
 def read_text_source(txt_source):
-    """Lit le contenu du fichier .txt et renvoie une liste de lignes non vides."""
+    """Reads the content of the .txt file and returns a list of non-empty lines."""
     parsed = urllib.parse.urlparse(txt_source)
     lines = []
     
@@ -77,19 +77,19 @@ def read_text_source(txt_source):
     return lines
 
 def url_filename_from_query(url):
-    """Récupère le paramètre FILENAME=xxx dans l'URL; sinon infère un nom."""
+    """Retrieves the FILENAME=xxx parameter from the URL; otherwise infers a name."""
     qs = urllib.parse.parse_qs(urllib.parse.urlparse(url).query)
     if "FILENAME" in qs and qs["FILENAME"]:
         return qs["FILENAME"][0]
     
-    # fallback: dernier segment + timestamp si besoin
+    # fallback: last segment + timestamp if needed
     name = os.path.basename(urllib.parse.urlparse(url).path)
     if not name or not name.lower().endswith(".tif"):
         name = f"tile_{int(time.time())}.tif"
     return name
 
 def download_with_retries(url, out_path):
-    """Télécharge un fichier binaire avec retry logic."""
+    """Downloads a binary file with retry logic."""
     tmp_path = out_path + ".part"
     last_err = None
     
@@ -110,7 +110,7 @@ def download_with_retries(url, out_path):
         except Exception as e:
             last_err = e
             if attempt <= CONFIG["HTTP_RETRIES"]:
-                log(f"[RETRY] Tentative {attempt} échouée pour {os.path.basename(out_path)}: {e}")
+                log(f"[RETRY] Attempt {attempt} failed for {os.path.basename(out_path)}: {e}")
                 time.sleep(1.0 * attempt)
             
     raise last_err
@@ -121,8 +121,8 @@ def download_with_retries(url, out_path):
 
 def parse_bbox_from_url(url):
     """
-    Extrait minx, miny, maxx, maxy, width_px, height_px, crs de l'URL WMS.
-    Renvoie dict ou lève ValueError.
+    Extracts minx, miny, maxx, maxy, width_px, height_px, crs from WMS URL.
+    Returns dict or raises ValueError.
     """
     up = urllib.parse.urlparse(url)
     qs = urllib.parse.parse_qs(up.query)
@@ -135,12 +135,12 @@ def parse_bbox_from_url(url):
     
     bbox_str = grab_one("BBOX")
     if not bbox_str:
-        raise ValueError(f"URL sans BBOX=... : {url}")
+        raise ValueError(f"URL without BBOX=... : {url}")
     
     try:
         minx, miny, maxx, maxy = [float(v) for v in bbox_str.split(",")]
     except Exception:
-        raise ValueError(f"BBOX invalide (attendu minx,miny,maxx,maxy) : {bbox_str!r}")
+        raise ValueError(f"Invalid BBOX (expected minx,miny,maxx,maxy) : {bbox_str!r}")
     
     width_px = grab_one("WIDTH", cast=int)
     height_px = grab_one("HEIGHT", cast=int)
@@ -158,10 +158,10 @@ def parse_bbox_from_url(url):
 
 def load_tiles_from_lines(lines):
     """
-    Parse toutes les lignes du .txt.
-    Renvoie:
-      tiles: liste de dict {url, local_name, minx,..., w_m,...}
-      bbox_minx, bbox_miny : min global
+    Parse all lines from the .txt file.
+    Returns:
+      tiles: list of dict {url, local_name, minx,..., w_m,...}
+      bbox_minx, bbox_miny : global min
     """
     tiles = []
     minx_all = float("+inf")
@@ -187,14 +187,14 @@ def load_tiles_from_lines(lines):
             
             # Sanity check
             if meta["crs"] and "2154" not in meta["crs"]:
-                log(f"[WARN] CRS non 2154 détecté pour {local_name}: {meta['crs']}")
+                log(f"[WARN] Non-2154 CRS detected for {local_name}: {meta['crs']}")
                 
         except Exception as e:
-            log(f"[ERROR] Impossible de parser l'URL: {url} - {e}")
+            log(f"[ERROR] Cannot parse URL: {url} - {e}")
             continue
     
     if not tiles:
-        raise RuntimeError("Aucune tuile valide trouvée dans le .txt")
+        raise RuntimeError("No valid tiles found in the .txt file")
     
     return tiles, minx_all, miny_all
 
@@ -203,38 +203,38 @@ def load_tiles_from_lines(lines):
 # ============================
 
 def main():
-    """Lance le téléchargement et génère les métadonnées."""
+    """Launches the download and generates metadata."""
     
-    # Prépare les chemins
+    # Prepare paths
     out_dir = expand_path(CONFIG["DOWNLOAD_DIR"])
     metadata_path = os.path.join(out_dir, CONFIG["METADATA_FILE"])
     
     if not os.path.isdir(out_dir):
         os.makedirs(out_dir, exist_ok=True)
-        log(f"[INFO] Dossier créé: {out_dir}")
+        log(f"[INFO] Directory created: {out_dir}")
     
-    # Récupère les URL depuis le .txt
+    # Get URLs from the .txt file
     try:
         lines = read_text_source(CONFIG["TXT_SOURCE"])
         tiles, minx_all, miny_all = load_tiles_from_lines(lines)
-        log(f"[INFO] {len(tiles)} tuiles trouvées dans le fichier source")
+        log(f"[INFO] {len(tiles)} tiles found in source file")
     except Exception as e:
-        print(f"[ERROR] Impossible de lire le fichier source: {e}")
+        print(f"[ERROR] Cannot read source file: {e}")
         return 1
     
-    # Téléchargements
-    log(f"[INFO] Téléchargement des tuiles dans: {out_dir}")
+    # Downloads
+    log(f"[INFO] Downloading tiles to: {out_dir}")
     successful_downloads = 0
     failed_downloads = 0
     
     for i, tile in enumerate(tiles, 1):
         local_name = tile["local_name"]
         local_path = os.path.join(out_dir, local_name)
-        # Assurer que le chemin soit absolu pour les métadonnées
+        # Ensure the path is absolute for metadata
         tile["local_path"] = os.path.abspath(local_path)
         
         if os.path.isfile(local_path):
-            log(f"  [{i:3d}/{len(tiles)}] [OK] Présent: {local_name}")
+            log(f"  [{i:3d}/{len(tiles)}] [OK] Present: {local_name}")
             successful_downloads += 1
             continue
         
@@ -242,12 +242,12 @@ def main():
             log(f"  [{i:3d}/{len(tiles)}] [DL] {local_name}...")
             download_with_retries(tile["url"], local_path)
             successful_downloads += 1
-            log(f"  [{i:3d}/{len(tiles)}] [OK] Téléchargé: {local_name}")
+            log(f"  [{i:3d}/{len(tiles)}] [OK] Downloaded: {local_name}")
         except Exception as e:
-            log(f"  [{i:3d}/{len(tiles)}] [ERR] Échec: {local_name} - {e}")
+            log(f"  [{i:3d}/{len(tiles)}] [ERR] Failed: {local_name} - {e}")
             failed_downloads += 1
     
-    # Génère les métadonnées pour Houdini
+    # Generate metadata for Houdini
     metadata = {
         "tiles": tiles,
         "global_bbox": {
@@ -266,8 +266,8 @@ def main():
     with open(metadata_path, "w", encoding="utf-8") as f:
         json.dump(metadata, f, indent=2, ensure_ascii=False)
     
-    log(f"[INFO] Métadonnées sauvées: {metadata_path}")
-    log(f"[DONE] {successful_downloads} téléchargements réussis, {failed_downloads} échecs")
+    log(f"[INFO] Metadata saved: {metadata_path}")
+    log(f"[DONE] {successful_downloads} successful downloads, {failed_downloads} failures")
     
     return 0 if failed_downloads == 0 else 1
 

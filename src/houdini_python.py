@@ -1,25 +1,25 @@
-# À utiliser dans un Python SOP au lieu d'un Point Wrangle
+# Use in a Python SOP instead of a Point Wrangle
 import json
 import hou
 
-# Récupérer le nœud et la géométrie
+# Get the node and geometry
 geo = hou.pwd().geometry()
 
-# Chemin vers votre fichier JSON
+# Path to your JSON file
 json_file_path = "F:tiles_metadata.json"
 
-# Lire le fichier JSON
+# Read the JSON file
 try:
     with open(json_file_path, 'r') as f:
         data = json.load(f)
     
-    # Supprimer tous les points existants
+    # Remove all existing points
     geo.clear()
     
-    # Accéder à la liste des tiles
+    # Access the tiles list
     tiles = data.get("tiles", [])
     
-    # Créer les attributs
+    # Create attributes
     geo.addAttrib(hou.attribType.Point, "tile_index", 0)
     geo.addAttrib(hou.attribType.Point, "url", "")
     geo.addAttrib(hou.attribType.Point, "local_name", "")
@@ -34,19 +34,19 @@ try:
     geo.addAttrib(hou.attribType.Point, "height_px", 0)
     geo.addAttrib(hou.attribType.Point, "crs", "")
     
-    # Pour chaque tile, créer un point avec la position moyenne
+    # For each tile, create a point with the average position
     for i, tile in enumerate(tiles):
-        # Calculer la position moyenne entre min et max
+        # Calculate the average position between min and max
         center_x = (tile["minx"] + tile["maxx"]) / 2.0
-        center_z = (tile["miny"] + tile["maxy"]) / 2.0  # Y devient Z dans Houdini
+        center_z = (tile["miny"] + tile["maxy"]) / 2.0  # Y becomes Z in Houdini
         
-        # Créer un nouveau point
+        # Create a new point
         pt = geo.createPoint()
         
-        # Définir la position du point (X, Y=0, Z)
+        # Set the point position (X, Y=0, Z)
         pt.setPosition([center_x, 0.0, center_z])
         
-        # Ajouter des attributs pour stocker les informations de la tile
+        # Add attributes to store tile information
         pt.setAttribValue("tile_index", i)
         pt.setAttribValue("url", tile["url"])
         pt.setAttribValue("local_name", tile["local_name"])
@@ -62,4 +62,4 @@ try:
         pt.setAttribValue("crs", tile["crs"])
 
 except Exception as e:
-    print(f"Erreur lors de la lecture du fichier JSON: {e}")
+    print(f"Error reading JSON file: {e}")
